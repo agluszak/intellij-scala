@@ -4,6 +4,7 @@ import java.util
 
 import com.intellij.compiler.server.BuildProcessParametersProvider
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.scala.compiler.AsyncProf._
 import org.jetbrains.plugins.scala.compiler.data.SbtData
 import org.jetbrains.plugins.scala.externalHighlighters.ScalaHighlightingMode
 
@@ -15,8 +16,9 @@ import scala.collection.JavaConverters._
 class ScalaBuildProcessParametersProvider(project: Project)
   extends BuildProcessParametersProvider {
   
-  override def getVMArguments: util.List[String] =
-    customScalaCompilerInterfaceDir().toSeq.asJava
+  override def getVMArguments: util.List[String] = {
+    customScalaCompilerInterfaceDir().toSeq ++ Seq(s"-agentpath:$ProfilerDir/build/libasyncProfiler.so=start,file=$jpsFlame,interval=$Interval")
+  }.asJava
 
   private def customScalaCompilerInterfaceDir(): Option[String] = {
     val key = SbtData.compilerInterfacesKey

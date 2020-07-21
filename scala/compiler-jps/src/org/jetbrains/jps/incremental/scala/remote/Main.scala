@@ -19,7 +19,7 @@ import org.jetbrains.jps.incremental.scala.Client
 import org.jetbrains.jps.incremental.scala.data.CompileServerCommandParser
 import org.jetbrains.jps.incremental.scala.local.LocalServer
 import org.jetbrains.jps.incremental.scala.local.worksheet.WorksheetServer
-import org.jetbrains.plugins.scala.compiler.CompilerEvent
+import org.jetbrains.plugins.scala.compiler.{AsyncProf, CompilerEvent}
 import org.jetbrains.plugins.scala.compiler.data.Arguments
 import org.jetbrains.plugins.scala.server.CompileServerToken
 
@@ -139,7 +139,7 @@ object Main {
     }
   }
 
-  private def compileLogic(args: Arguments, client: EncodingEventGeneratingClient): Unit = {
+  private def compileLogic(args: Arguments, client: EncodingEventGeneratingClient): Unit = AsyncProf.profileServer {
     val worksheetArgs = args.worksheetArgs
     if (!worksheetArgs.exists(_.isRepl)) {
       server.compile(args.sbtData, args.compilerData, args.compilationData, client)
