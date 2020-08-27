@@ -224,9 +224,9 @@ class ReferenceExpressionResolver(implicit projectContext: ProjectContext) {
     def resolveUnqalified(processor: BaseProcessor): BaseProcessor =
       ref.getContext match {
         case ScSugarCallExpr(operand, operation, _) if ref == operation =>
-          processTypes(operand, processor)
+          processQualifier(operand, processor)
         case (gc: ScGenericCall) childOf ScInfixExpr(lhs, ref, _) if ref == gc.referencedExpr =>
-          processTypes(lhs, processor)
+          processQualifier(lhs, processor)
         case _ =>
           resolveUnqualifiedExpression(processor)
           processor
@@ -248,9 +248,9 @@ class ReferenceExpressionResolver(implicit projectContext: ProjectContext) {
 
       val contextElement = (context, processor) match {
         case (x: ScAssignment, _) if x.leftExpression == ref => Some(context)
-        case (_, _: DependencyProcessor) => None
-        case (_, _: CompletionProcessor) => Some(ref)
-        case _ => None
+        case (_, _: DependencyProcessor)                     => None
+        case (_, _: CompletionProcessor)                     => Some(ref)
+        case _                                               => None
       }
 
       contextElement.foreach(processAssignment(_, processor))
@@ -512,14 +512,13 @@ class ReferenceExpressionResolver(implicit projectContext: ProjectContext) {
       }
     }
 
-    def processTypes(qualifier: ScExpression, processor: BaseProcessor): BaseProcessor = {
+    def processQualifier(qualifier: ScExpression, processor: BaseProcessor): BaseProcessor = {
       ProgressManager.checkCanceled()
 
       qualifier.getNonValueType() match {
-        case Right(tpt@ScTypePolymorphicType(internal, tp)) if tp.nonEmpty &&
+        case Right(ScTypePolymorphicType(internal, tp)) if tp.nonEmpty &&
           !internal.isInstanceOf[ScMethodType] && !internal.isInstanceOf[UndefinedType] /* optimization */ =>
-          val substed = tpt.typeParameterOrLowerSubstitutor(internal)
-          processType(substed, qualifier, processor)
+          processType(internal, qualifier, processor)
           if (processor.candidates.nonEmpty) return processor
         case _ =>
       }
@@ -619,7 +618,7 @@ class ReferenceExpressionResolver(implicit projectContext: ProjectContext) {
         ResolveUtils.processSuperReference(superQ, processor, ref)
         processor
       case Some(q) =>
-        processTypes(q, processor)
+        processQualifier(q, processor)
     }
     var res = actualProcessor.candidates
     if (accessibilityCheck && res.length == 0) {
