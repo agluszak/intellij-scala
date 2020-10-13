@@ -8,7 +8,7 @@ package typedef
 import com.intellij.navigation.NavigationItem
 import com.intellij.psi._
 import com.intellij.psi.impl.PsiClassImplUtil
-import org.jetbrains.plugins.scala.extensions.{PsiElementExt, TraversableExt}
+import org.jetbrains.plugins.scala.extensions.TraversableExt
 import org.jetbrains.plugins.scala.lang.psi.adapters.PsiClassAdapter
 import org.jetbrains.plugins.scala.lang.psi.api.statements._
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScTypeParam
@@ -31,8 +31,6 @@ trait ScTypeDefinition extends ScTemplateDefinition
   def isCase: Boolean = false
 
   def isObject: Boolean = false
-
-  def isTopLevel: Boolean = !this.parentsInFile.exists(_.isInstanceOf[ScTypeDefinition])
 
   def getPath: String = {
     val qualName = qualifiedName
