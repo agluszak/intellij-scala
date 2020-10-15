@@ -20,8 +20,8 @@ class ScalaSig(val entries: Array[Entry]) {
   private val symAnnots = ArrayBuffer.empty[SymAnnot]
   private val parentToChildren = mutable.HashMap.empty[Int, ArrayBuffer[Symbol]]
 
-  def topLevelClasses: mutable.Seq[ClassSymbol] = classes.filter(isTopLevelClass)
-  def topLevelObjects: mutable.Seq[ObjectSymbol] = objects.filter(isTopLevel)
+  def topLevelClasses: Iterator[ClassSymbol] = classes.iterator.filter(isTopLevelClass)
+  def topLevelObjects: Iterator[ObjectSymbol] = objects.iterator.filter(isTopLevel)
 
   def findCompanionClass(objectSymbol: ObjectSymbol): Option[ClassSymbol] = {
     val owner: Symbol = objectSymbol.symbolInfo.owner.get
@@ -29,22 +29,22 @@ class ScalaSig(val entries: Array[Entry]) {
     classes.find(c => c.info.owner.get.eq(owner) && c.name == objectSymbol.name)
   }
 
-  def children(symbol: ScalaSigSymbol): collection.Seq[Symbol] = {
+  def children(symbol: ScalaSigSymbol): Iterator[Symbol] = {
     parentToChildren.keysIterator.find(get(_) eq symbol) match {
-      case None => Seq.empty
-      case Some(i) => parentToChildren(i)
+      case None => Iterator.empty
+      case Some(i) => parentToChildren(i).iterator
     }
   }
 
-  def attributes(symbol: ScalaSigSymbol): Seq[SymAnnot] = {
+  def attributes(symbol: ScalaSigSymbol): Iterator[SymAnnot] = {
     def sameSymbol(ann: SymAnnot) = (ann.symbol.get, symbol) match {
       case (s, t) if s == t => true
       case (m1: MethodSymbol, m2: MethodSymbol) if equiv(m1, m2) => true
       case _ => false
     }
     val forSameSymbol = symAnnots.filter(sameSymbol)
-    val distinctTypes = forSameSymbol.map(ann => ann.typeRef -> ann).toMap.values
-    distinctTypes.toVector
+    val distinctByType = forSameSymbol.iterator.map(ann => ann.typeRef -> ann).toMap
+    distinctByType.valuesIterator
   }
 
   def addClass(c: ClassSymbol): Unit = classes += c

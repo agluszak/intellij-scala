@@ -107,7 +107,7 @@ object Decompiler {
       // Print package with special treatment for package objects
 
       for {
-        symbol <- symbols.headOption
+        symbol <- symbols.nextOption()
         parent <- symbol.parent
         path <- findPath(parent)
         packageName = ScalaSigPrinter.processName(path)
