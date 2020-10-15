@@ -92,7 +92,7 @@ object IdeClient {
     val moduleId = moduleBuildTarget.getModule.getName
     val testScope = moduleBuildTarget.isTests
     CompilationUnitId(
-      moduleId = moduleId,
+      moduleName = moduleId,
       testScope = testScope
     )
   }
